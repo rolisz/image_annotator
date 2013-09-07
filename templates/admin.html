@@ -5,8 +5,8 @@
 </head>
 <body>
 <ul>
-{% for letter in letters %}
-    <li><img src="{{ url_for('blob',id=letter[0]) }}" /> <input type="text" value="{{letter[1]}}"/></li>
+{% for anott in annotations %}
+    <li><img src="{{ url_for('blob',id=anott[0]) }}" /> <input type="text" value="{{anott[1]}}"/></li>
 {% endfor %}
 </ul>
 </body>

@@ -1,18 +1,18 @@
-drop table if exists letters;
-create table letters (
+drop table if exists annotations;
+create table annotations (
   id integer primary key autoincrement,
-  line varchar(30),
+  image varchar(30),
   x integer,
   y integer,
   width integer,
   height integer,
-  charac varchar(1)
+  label varchar(1)
 );
 
 drop table if exists blobs;
 create table blobs (
   id integer primary key autoincrement,
-  line varchar(30),
+  image varchar(30),
   x integer,
   y integer,
   width integer,
