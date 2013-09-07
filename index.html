@@ -46,8 +46,8 @@
 <li>DATABASE - location of the sqlite3 database file</li>
 <li>DEBUG - if True when making predictions there will be some files saved in the tmp folder</li>
 <li>SK_MODEL - <em>optional</em> location to pickled file of the scikit-learn model</li>
-<li>SK_LABEL - <em></em>optional, but must be given if SK_MODEL is declared</em> location to the pickled file of the scikit-learn label encoder
-*PATCH_SIZE - <em></em>optional, but must be given if SK_MODEL is declared</em> the dimensions of the square to which to resize blobs before passing to the scikit-learn model for prediction. </li>
+<li>SK_LABEL - <em>optional, but must be given if SK_MODEL is declared</em> location to the pickled file of the scikit-learn label encoder
+<li>PATCH_SIZE - <em>optional, but must be given if SK_MODEL is declared</em> the dimensions of the square to which to resize blobs before passing to the scikit-learn model for prediction. </li>
 </ul><p>The images you want annotated should be named sequentially, 0.jpg, 1.jpg, and so on and they should be put in the static/img folder. </p>
 
 <p>The sqlite3 database files needs to be created and the tables from schema.sql need to be created using the following command:</p>
