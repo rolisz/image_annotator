@@ -55,6 +55,26 @@
     var annot = $("#annotation");
     var blobs = [];
 
+    var img_select = img.imgAreaSelect({
+        handles: true,
+        keys: true,
+        show: true,
+        onInit: load_blob_data,
+        onSelectEnd: function (img, obj) {
+            if (obj.width) {
+                $('#x1').val(obj.x1);
+                $('#y1').val(obj.y1);
+                $('#width').val(obj.width);
+                $('#height').val(obj.height);
+                query_blob();
+                annot.focus();
+            }
+        },
+        instance: true,
+        imageHeight: img[0].naturalHeight,
+        imageWidth: img[0].naturalWidth
+    });
+
     function showNextBlob() {
         var fblob = blobs.pop();
 
@@ -81,6 +101,7 @@
         }
         annot.focus();
     }
+
     function query_blob() {
         $.post('query_blob/' + $('img').data('nr'), {
             x: Math.round($('#x1').val()),
@@ -91,25 +112,6 @@
             $("#letter").val(e.prediction).select()
         });
     }
-    var img_select = img.imgAreaSelect({
-        handles: true,
-        keys: true,
-        show: true,
-        onInit: load_blob_data,
-        onSelectEnd: function (img, obj) {
-            if (obj.width) {
-                $('#x1').val(obj.x1);
-                $('#y1').val(obj.y1);
-                $('#width').val(obj.width);
-                $('#height').val(obj.height);
-                query_blob();
-                annot.focus();
-            }
-        },
-        instance: true,
-        imageHeight: img[0].naturalHeight,
-        imageWidth: img[0].naturalWidth
-    });
 
     function load_blob_data() {
         $.get('line_blobs/' + img.data('nr'), function (data) {
@@ -118,6 +120,17 @@
             });
             showNextBlob();
         })
+    }
+
+    function load_image(i) {
+        img.attr('src', "/static/img/" + i + ".jpg").data('nr', i).on('load', function () {
+            load_blob_data();
+            img_select.setOptions({
+                show: true,
+                imageHeight: img[0].naturalHeight,
+                imageWidth: img[0].naturalWidth
+            });
+        });
     }
 
     $('#message_submit').on('click', function (e) {
@@ -143,6 +156,14 @@
         }
     });
 
+    $('#next').on('click', function (e) {
+        $('#pass').fadeIn(100);
+        var i = $('img').data('nr') + 1;
+        img_select.setOptions({hide: true});
+        load_image(i);
+        history.pushState(null, "Image Annotator " + i, i);
+    });
+
     $('#pass').on('click', function (e) {
         if (blobs.length > 0) {
             showNextBlob();
@@ -152,24 +173,6 @@
             img_select.setOptions({hide: true});
             $('#pass').fadeOut(100);
         }
-    });
-
-    function load_image(i) {
-        img.attr('src', "/static/img/" + i + ".jpg").data('nr', i).on('load', function () {
-            load_blob_data();
-            img_select.setOptions({
-                show: true,
-                imageHeight: img[0].naturalHeight,
-                imageWidth: img[0].naturalWidth
-            });
-        });
-    }
-    $('#next').on('click', function (e) {
-        $('#pass').fadeIn(100);
-        var i = $('img').data('nr') + 1;
-        img_select.setOptions({hide: true});
-        load_image(i);
-        history.pushState(null, "Image Annotator " + i, i);
     });
 
     $('#split').on('click', function (e) {

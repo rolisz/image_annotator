@@ -47,13 +47,13 @@ def teardown_request(exception):
 
 @app.route('/')
 @app.route("/<int:id>")
-def main(id=0):
+def index(id=0):
     return render_template('images.html', i=id)
 
 
 @app.route('/add', methods=['POST'])
-def add_entry():
-    g.db.execute('insert into annotations (image, x, y, width, height, label) values (?, ?, ?,?,?,?)',
+def add_blob():
+    g.db.execute('INSERT INTO annotations (image, x, y, width, height, label) VALUES (?, ?, ?,?,?,?)',
                  [request.form['image'], request.form['x'], request.form['y'], request.form['width'],
                   request.form['height'], request.form['label']])
     g.db.commit()
@@ -78,8 +78,8 @@ def query_blob(id):
 
 
 @app.route('/line_blobs/<int:id>', methods=['GET'])
-def line_blob(id):
-    cur = g.db.execute('select id, x, y, width, height from blobs where image=?', [id])
+def line_blobs(id):
+    cur = g.db.execute('SELECT id, x, y, width, height FROM blobs WHERE image=?', [id])
     blobs = cur.fetchall()
     entries = []
     img = Image("static\\img\\%d.jpg" % id)
@@ -103,7 +103,7 @@ def line_blob(id):
 
 @app.route('/blob/<int:id>', methods=['GET'])
 def blob(id):
-    cur = g.db.execute('select id, image, x, y, width, height from annotations where annotations.id=?', [id])
+    cur = g.db.execute('SELECT id, image, x, y, width, height FROM annotations WHERE annotations.id=?', [id])
     line = cur.fetchone()
 
     img = Image("static\\img\\%d.jpg" % int(line[1]))
@@ -115,11 +115,24 @@ def blob(id):
     resp.content_type = "image/jpeg"
     return resp
 
+@app.route('/blob/<int:id>', methods=['POST'])
+def change_blob(id):
+    g.db.execute('UPDATE annotations SET label = ? WHERE id = ?', [request.form['label'], id])
+    g.db.commit()
+    return jsonify(success=True)
+
+@app.route('/blob/<int:id>', methods=['DELETE'])
+def delete_blob(id):
+    g.db.execute('DELETE FROM annotations WHERE id = ?', [id])
+    g.db.commit()
+    return jsonify(success=True)
+
 @app.route('/admin')
-def admin():
-    cur = g.db.execute('select annotations.id, annotations.charac from annotations limit 0, 100')
+@app.route('/admin/<int:page>')
+def admin(page=0):
+    cur = g.db.execute('SELECT annotations.id, annotations.label FROM annotations LIMIT ?, 100', [page*100])
     blobs = cur.fetchall()
-    return render_template('admin.html', annotations=blobs)
+    return render_template('admin.html', annotations=blobs, page=page)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
