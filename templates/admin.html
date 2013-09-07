@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Annotation administration</title>
+</head>
+<body>
+<ul>
+{% for letter in letters %}
+    <li><img src="{{ url_for('blob',id=letter[0]) }}" /> <input type="text" value="{{letter[1]}}"/></li>
+{% endfor %}
+</ul>
+</body>
+</html>

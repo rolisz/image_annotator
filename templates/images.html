@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt Annotation</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/imgareaselect-default.css') }}">
+    <style>
+        .messagepop.pop {
+            position: absolute;
+            z-index:5;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        html {
+            height:auto!important;
+        }
+        img {
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body>
+<input id="x1" type="number" />
+<input id="y1" type="number" />
+<input id="width" type="number" />
+<input id="height" type="number" />
+<img width=99% data-nr="{{ i }}" src="{{ url_for('static',filename='img/'~i~'.jpg') }}"/>
+
+
+<div class="messagepop pop">
+    <form method="post" id="new_message" action="/add">
+        <p><label for="letter">Letter:</label><input id="letter" type="text" size=2 >
+           <label for="letter">Split:</label><input id="split_count" type="text" size=2 value=2 ></p>
+        <p><input type="submit" value="Send" name="commit" id="message_submit"/>
+           <input type="button" value="Pass" name="pass" id="pass">
+           <input type="button" value="Next Image" name="next" id="next">
+           <input type="button" value="Split" name="split" id="split">
+
+        </p>
+    </form>
+</div>
+</body>
+<script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.imgareaselect.js') }}"></script>
+<script>
+    var currentMousePos = { x: -1, y: -1 };
+    $(document).mousemove(function(event) {
+        currentMousePos.x = event.pageX;
+        currentMousePos.y = event.pageY;
+    });
+    $('html').css('height','auto')
+
+    function showNextBlob() {
+        var fblob = blobs.pop();
+        console.log(fblob)
+        img_select.setSelection(fblob.x,fblob.y,
+                                fblob.x+fblob.width,
+                                fblob.y+fblob.height)
+        img_select.update();
+        $('#x1').val(fblob.x);
+        $('#y1').val(fblob.y);
+        $('#width').val(fblob.width);
+        $('#height').val(fblob.height);
+
+        if (img_select.getSelection().x1 != fblob.x) {
+            if (fblob.y + fblob.height > $('img')[0].naturalHeight) {
+                fblob.height = $('img')[0].naturalHeight - fblob.y;
+            }
+                    img_select.setSelection(fblob.x,fblob.y,
+                                fblob.x+fblob.width,
+                                fblob.y+fblob.height)
+            img_select.update();
+            console.log(img_select.getSelection())
+        }
+        if (fblob.charac) {
+            $('#letter').val(fblob.charac).select()
+        }
+        else {
+            query_blob();
+        }
+        $('#letter').focus();
+    }
+    function query_blob() {
+        $.post('query_blob/' + $('img').data('nr'), {
+            x:Math.round($('#x1').val()),
+            y:Math.round($('#y1').val()),
+            width:Math.round($('#width').val()),
+            height:Math.round($('#height').val())
+        }, function (e) {
+            $("#letter").val(e.prediction).select()
+            console.log(e)
+        })
+    }
+    var img_select = $('img').imgAreaSelect({
+        handles: true,
+
+        keys:true,
+        show:true,
+        onInit:load_blob_data,
+        onSelectEnd: function(img, obj) {
+            if (obj.width) {
+                $('#x1').val(obj.x1);
+                $('#y1').val(obj.y1);
+                $('#width').val(obj.width);
+                $('#height').val(obj.height);
+                $("#letter").focus();
+                query_blob();
+            }
+        },
+        instance:true,
+        imageHeight:$('img')[0].naturalHeight,
+        imageWidth:$('img')[0].naturalWidth
+    });
+
+    var blobs = [];
+
+    function load_blob_data(img, obj) {
+        console.log(img, obj);
+                $.get('line_blobs/'+$('img').data('nr'),function(data) {
+                    blobs = data['blobs'].sort(function(a,b) {
+                        return b.x - a.x;
+                    });
+                    console.log(blobs);
+                    showNextBlob();
+                })
+            }
+
+    $('#message_submit').on('click',function(e) {
+        e.preventDefault()
+        if ($('#letter').val()) {
+            $.post('add',{
+                line: $('img').data('nr'),
+                x:Math.round($('#x1').val()),
+                y:Math.round($('#y1').val()),
+                width:Math.round($('#width').val()),
+                height:Math.round($('#height').val()),
+                charac:$('#letter').val()
+            },function(e) {
+                console.log(e)
+            })
+            $("#letter").val('')
+            if (blobs.length > 0) {
+                showNextBlob();
+            }
+            else {
+                img_select.setOptions({hide:true})
+            }
+        }
+    })
+    $('#pass').on('click',function(e) {
+        if (blobs.length > 0) {
+            showNextBlob();
+            $("#letter").focus();
+        }
+        else {
+            img_select.setOptions({hide:true})
+            $('#pass').fadeOut(100);
+        }
+    })
+
+    function load_image(i) {
+        $('img').attr('src', "/static/img/" + i + ".jpg").data('nr', i).on('load', function () {
+//                load_area_select()
+            load_blob_data()
+            img_select.setOptions({
+                show: true,
+                imageHeight: $('img')[0].naturalHeight,
+                imageWidth: $('img')[0].naturalWidth
+            });
+        });
+    }
+    $('#next').on('click', function(e) {
+        $('#pass').fadeIn(100);
+        var i = $('img').data('nr') + 1;
+        img_select.setOptions({hide:true});
+        load_image(i);
+        history.pushState(null, "Receipt Annotator "+i, i);
+    })
+
+    $('#split').on('click', function(e) {
+        var curr_blob = img_select.getSelection();
+        var nr = $('#split_count').val();
+        var width = curr_blob.width / nr + 1; // split blob into parts and add some padding to each
+        var new_blob = {x:curr_blob.x1, y:curr_blob.y1,
+                        width:width, height:curr_blob.height
+                        }
+        blobs.push(new_blob)
+        for (var i = 0; i < nr - 1; i++) {
+            new_blob = $.extend({},new_blob)
+            new_blob.x = new_blob.x + width - 1; // take care of padding + move a bit to left
+            blobs.push(new_blob)
+        }
+        blobs.sort(function(a,b) {
+            return b.x - a.x;
+        });
+        showNextBlob();
+
+    });
+    $(document).keydown(function (e) {
+        if (e.keyCode == 13 && e.shiftKey) {
+            $('#next').click();
+        }
+        if (e.keyCode == 13 && e.ctrlKey) {
+            $('#split').click();
+        }
+        if (e.keyCode == 13 && e.altKey) {
+            $('#pass').click();
+        }
+    });
+
+    window.addEventListener("popstate", function(e) {
+        if (location.pathname.substr(1).length >= 1) {
+            load_image(parseInt(location.pathname.substr(1)));
+        }
+    });
+</script>
+</html>
