@@ -1,73 +1,68 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
     <title>Image annotator by rolisz</title>
-
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">Image annotator</h1>
-        <p class="header">Tool for annotating images in Python, using Flask and SimpleCV</p>
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/rolisz/image_annotator/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/rolisz/image_annotator/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/rolisz/image_annotator">View On GitHub</a></li>
-        </ul>
+    <header>
+      <div class="container">
+        <h1>Image annotator</h1>
+        <h2>Tool for annotating images in Python, using Flask and SimpleCV</h2>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/rolisz">rolisz</a></p>
+        <section id="downloads">
+          <a href="https://github.com/rolisz/image_annotator/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/rolisz/image_annotator/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/rolisz/image_annotator" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
 
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="image-annotator" class="anchor" href="#image-annotator"><span class="octicon octicon-link"></span></a>Image Annotator</h1>
 
-      </header>
-      <section>
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+<p>This is a tool for annotating images in Python, using <a href="http://flask.pocoo.org/">Flask</a> and <a href="http://simplecv.org/">SimpleCV</a> and, optionally, <a href="http://scikit-learn.org/stable/">scikit-learn</a> in the backend, and jQuery and <a href="http://odyniec.net/projects/imgareaselect/">imgAreaSelect</a> on the frontend.</p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>Flask is used to serve up images in the browser. There the bounding box of the regions of interest can be selected and given a label and sent back to the server to save. </p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>If you have an heuristic that can give you approximate locations of regions of interest, they can be served up from the database to speed up the annotation process. Also, if you already have a (partially) working scikit-learn model to classify images, it can be used to suggest labels for the selection. </p>
 
 <h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h3>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<p>After you've downloaded the tarball/zip from GitHub, you need to set up the config file. There are five settings to configure:</p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<ul>
+<li>DATABASE - location of the sqlite3 database file</li>
+<li>DEBUG - if True when making predictions there will be some files saved in the tmp folder</li>
+<li>SK_MODEL - <em>optional</em> location to pickled file of the scikit-learn model</li>
+<li>SK_LABEL - *optional, but must be given if SK_MODEL is declared * location to the pickled file of the scikit-learn label encoder
+*PATCH_SIZE - *optional, but must be given if SK_MODEL is declared * the dimensions of the square to which to resize blobs before passing to the scikit-learn model for prediction. </li>
+</ul><p>The images you want annotated should be named sequentially, 0.jpg, 1.jpg, and so on and they should be put in the static/img folder. </p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<p>The sqlite3 database files needs to be created and the tables from schema.sql need to be created using the following command:</p>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+<p><code>sqlite3 schema.sql &gt; path/to/db</code></p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<p>If you have an heuristic to generate blobs, you should insert them into the blobs table, with the following details: image_name, x, y, width and height. </p>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+<p>Last step is to run flask_annotator.py and then point your browser to 127.0.0.1:5000. You should see your first image, ready to be annotated. </p>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p>After you have annotated several images, you can go to 127.0.0.1:5000/admin to see a list of your annotations and you can correct them or delete them. </p>
       </section>
-      <footer>
-        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
-      </footer>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		          <script type="text/javascript">
+
+              <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
